@@ -27,11 +27,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Check active sessions and sets the user
     const initializeAuth = async () => {
       try {
-        // IMPORTANT: Use getSession first, not getUser
-        const { data: { session } } = await supabase.auth.getSession()
+        console.log('🔍 Checking session...')
+        const { data: { session }, error } = await supabase.auth.getSession()
+        
+        if (error) {
+          console.error('❌ Session error:', error)
+        } else {
+          console.log('✅ Session data:', session ? 'Found' : 'Not found')
+          console.log('👤 User:', session?.user?.email || 'No user')
+        }
+        
         setUser(session?.user ?? null)
       } catch (error) {
-        console.error('Error getting session:', error)
+        console.error('❌ Error getting session:', error)
       } finally {
         setLoading(false)
       }
@@ -40,20 +48,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     initializeAuth()
 
     // Listen for changes on auth state (logged in, signed out, etc.)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('🔄 Auth state changed:', event)
+      console.log('👤 New user:', session?.user?.email || 'No user')
       setUser(session?.user ?? null)
       setLoading(false)
     })
 
     return () => subscription.unsubscribe()
-  }, []) // Empty dependency array - we only want this to run once
+  }, []) // Empty array - we only want this to run once
 
   const signOut = async () => {
     try {
-      await supabase.auth.signOut()
+      console.log('🚪 Signing out...')
+      const { error } = await supabase.auth.signOut()
+      if (error) {
+        console.error('❌ Sign out error:', error)
+      } else {
+        console.log('✅ Signed out successfully')
+      }
       router.push('/auth')
     } catch (error) {
-      console.error('Error signing out:', error)
+      console.error('❌ Error signing out:', error)
     }
   }
 

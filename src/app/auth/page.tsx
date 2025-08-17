@@ -29,7 +29,7 @@ export default function AuthPage() {
           password,
         })
         if (error) throw error
-        router.push('/')
+        router.push('/dashboard')
         router.refresh() // Force refresh to update auth state
       } else {
         const { error } = await supabase.auth.signUp({
@@ -39,8 +39,8 @@ export default function AuthPage() {
         if (error) throw error
         setMessage('Check your email for the confirmation link!')
       }
-    } catch (error: any) {
-      setMessage(error.message)
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'An error occurred')
     } finally {
       setLoading(false)
     }
