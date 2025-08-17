@@ -1,10 +1,24 @@
 'use client'
 
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/auth-context'
 import { Button } from '@/components/ui/button'
 
 export default function Home() {
   const { user, loading, signOut } = useAuth()
+  const router = useRouter()
+
+  useEffect(() => {
+    // Redirect to auth page if not authenticated
+    if (!loading && !user) {
+      router.push('/auth')
+    }
+    // Redirect to dashboard if authenticated
+    if (!loading && user) {
+      router.push('/dashboard')
+    }
+  }, [user, loading, router])
 
   if (loading) {
     return (
@@ -12,6 +26,11 @@ export default function Home() {
         <div className="text-lg">Loading...</div>
       </div>
     )
+  }
+
+  // Don't render the authenticated UI if there's no user
+  if (!user) {
+    return null
   }
 
   return (
@@ -24,7 +43,7 @@ export default function Home() {
             </h1>
             <div className="flex items-center gap-4">
               <span className="text-sm text-gray-600">
-                Welcome, {user?.email}
+                Welcome, {user.email}
               </span>
               <Button onClick={signOut} variant="outline">
                 Sign out
